@@ -18,8 +18,8 @@ library(randomForest)
 # Ambil data
 ```{r}
 # memngambil data dari file csv
-datas <- read.csv("data_tweet.csv")
-
+data <- read.csv("data.csv")
+datas <- data %>% select(tweet, sentiment)
 ```
 
 ```{r}
@@ -85,14 +85,13 @@ prop.table(table(test_set$Class))
 
 # Random Forest Algoritma
 ```{r}
-##rf_classifier = randomForest(x = train_set[-1210], y = train_set$Class, ntree = 300)
-##rf_classifierf_classifier = randomForest(x = train_set[-1210], y = train_set$Class, ntree = 300)
-##rf_classifier
+rf_classifier = randomForest(x = train_set[-1210], y = train_set$Class, ntree = 300)
+rf_classifier
 ```
 
 # Confusion matrix
 ```{r}
-##rf_pred = predict(rf_classifier, newdata = test_set[-1210])
-##confusionMatrix(table(rf_pred,test_set$Class))
+rf_pred = predict(rf_classifier, newdata = test_set[-1210])
+confusionMatrix(table(rf_pred,test_set$Class))
 ```
 

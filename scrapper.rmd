@@ -93,7 +93,7 @@ sentiment <- as.factor(ifelse(scores < 0, "negative", ifelse(scores == 0, "neutr
 ```
 # Build csv
 ```{r}
-# menyimpan data yang sudah dilabeli ke dalam++ file csv
+# menyimpan data yang sudah dilabeli ke dalam file csv
 dataframe <- data.frame(tweet = unlist(cleanText), sentiment = sentiment)
 write.csv(dataframe, "data_sentiment.csv")
 ```
