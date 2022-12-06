@@ -1,0 +1,76 @@
+---
+title: "Untitled"
+author: "Windy"
+date: "2022-11-30"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(shiny)
+library(vroom)
+library(here)
+library(dplyr)
+library(ggplot2)
+library(RColorBrewer)
+```
+
+
+```{r}
+ui <- fluidPage(
+  headerPanel("Analisis Sentimen Uber"),
+  headerPanel("Menggunakan Algoritma Random Forest"),
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Data Twitter", DT::dataTableOutput('dataTwitter')),
+        tabPanel("Data Cleaned", DT::dataTableOutput('dataCleaned')),
+        tabPanel("Data Sentimen", DT::dataTableOutput('dataSentiment')),
+        tabPanel("Kategori Polaritas", plotOutput("sentiment"))
+      )
+    )
+)
+```
+
+
+```{r}
+server <- function(input, output) {
+  dataTwitter <- read.csv("data_tweet.csv")
+  output$dataTwitter = DT::renderDataTable({
+    DT::datatable(dataTwitter, options = list(lengthChange = FALSE))
+  })
+  
+  dataCleaned <- read.csv("data_clean.csv")
+  output$dataCleaned = DT::renderDataTable({
+    DT::datatable(dataCleaned, options = list(lengthChange = FALSE))
+  })
+  
+  dataSentiment <- read.csv("data_sentiment.csv")
+  output$dataSentiment = DT::renderDataTable({
+    DT::datatable(dataSentiment, options = list(lengthChange = FALSE))
+  })
+
+  neutral <- length(which(dataSentiment$sentiment == "neutral"))
+  positive <- length(which(dataSentiment$sentiment == "positive"))
+  negative <- length(which(dataSentiment$sentiment == "negative"))
+  Sentiment <- c("Negative","Neutral","Positive")
+  Count <- c(negative, neutral, positive)
+  plt_sentiment <- data.frame(Sentiment, Count)
+  plotSentiment <- function(plt_sentiment){
+    ggplot(data=plt_sentiment, aes(x=Sentiment, y=Count)) + geom_bar(aes(fill = Sentiment),stat = "identity")+
+    xlab("Sentiments") + ylab("Total")+ggtitle("Sentiments of Uber Tweets ")
+  }
+  
+  output$sentiment <- renderPlot({
+    plotSentiment(plt_sentiment)
+  })
+}
+```
+
+
+```{r}
+shinyApp(ui = ui, server = server)
+```
+

@@ -1,0 +1,98 @@
+---
+title: "R Notebook"
+output: html_document
+---
+
+# Library
+```{r}
+library(tidyverse)
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(ggplot2)
+library(e1071)
+library(caret)
+library(randomForest)
+```
+
+# Ambil data
+```{r}
+# memngambil data dari file csv
+datas <- read.csv("data_tweet.csv")
+
+```
+
+```{r}
+neutral <- length(which(datas$sentiment == "neutral"))
+positive <- length(which(datas$sentiment == "positive"))
+negative <- length(which(datas$sentiment == "negative"))
+Sentiment <- c("Negative","Neutral","Positive")
+Count <- c(negative, neutral, positive)
+output <- data.frame(Sentiment, Count)
+ggplot(data=output, aes(x=Sentiment, y=Count)) + geom_bar(aes(fill = Sentiment),stat = "identity")+
+  xlab("Sentiments") + ylab("Total")+ggtitle("Sentiments of Uber Tweets ")
+```
+
+
+# Membuat corpus (Cleaning)
+```{r}
+corpus <- VCorpus(VectorSource(datas$tweet))
+corpus <- tm_map(corpus, content_transformer(tolower))
+corpus <- tm_map(corpus, removeNumbers)
+corpus <- tm_map(corpus, removePunctuation)
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+corpus <- tm_map(corpus, stemDocument)
+corpus <- tm_map(corpus, stripWhitespace)
+```
+
+# Membuat matrix dari data corpus
+```{r}
+dtm <- DocumentTermMatrix(corpus)
+dtm <- removeSparseTerms(dtm, 0.999)
+```
+
+# Mencetak wordcloud
+```{r}
+wordcloud(datas,min.freq = 500,colors=brewer.pal(8, "Dark2"),random.color = TRUE,max.words = 100)
+```
+
+
+```{r}
+convert <- function(x) {
+  y <- ifelse(x > 0, 1, 0)
+  y <- factor(y, levels = c(0, 1), labels = c("No", "Yes"))
+  y
+}
+
+datanaive <- apply(dtm, 2, convert)
+
+dataset <- as.data.frame(as.matrix(datanaive))
+dataset$Class <- as.factor(datas$sentiment)
+str(dataset$Class)
+```
+
+
+```{r}
+set.seed(31)
+split <- sample(2, nrow(dataset), prob = c(0.75, 0.25), replace = TRUE)
+train_set = dataset[split == 1,]
+test_set = dataset[split == 2,]
+
+prop.table(table(train_set$Class))
+prop.table(table(test_set$Class))
+```
+
+
+# Random Forest Algoritma
+```{r}
+##rf_classifier = randomForest(x = train_set[-1210], y = train_set$Class, ntree = 300)
+##rf_classifierf_classifier = randomForest(x = train_set[-1210], y = train_set$Class, ntree = 300)
+##rf_classifier
+```
+
+# Confusion matrix
+```{r}
+##rf_pred = predict(rf_classifier, newdata = test_set[-1210])
+##confusionMatrix(table(rf_pred,test_set$Class))
+```
+
